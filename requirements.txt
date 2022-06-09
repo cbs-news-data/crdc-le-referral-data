@@ -1,0 +1,17 @@
+# development tools
+black
+pylint
+jupyter
+
+# frequently-used data tools
+pandas
+csvkit
+openpyxl
+geopandas
+rtree
+matplotlib
+pandera[io]
+
+# utilities
+tqdm
+pyyaml
