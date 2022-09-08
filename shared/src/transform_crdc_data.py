@@ -10,10 +10,9 @@ import sys
 from typing import Union
 import pandas as pd
 import yaml
+import pandera as pa
 
-# import pandera as pa
-
-# constants
+# shared constants
 RESERVE_CODES = {
     -3: "Skip logic failure",
     -5: "Action plan",
@@ -84,12 +83,57 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    # setup schema based on provided column name
+    schema = pa.DataFrameSchema(
+        columns={
+            "combokey": pa.Column(dtype=str),
+            "lea_state": pa.Column(dtype=str),
+            "lea_name": pa.Column(dtype=str),
+            "sch_name": pa.Column(dtype=str),
+            "jj": pa.Column(dtype=bool, nullable=False, unique=False),
+            "variable": pa.Column(
+                dtype=str,
+                checks=[
+                    pa.Check.isin(
+                        [
+                            "overall",
+                            "limited english proficient",
+                            "enrolled in lep program",
+                            "idea",
+                            "section 504",
+                        ]
+                    )
+                ],
+            ),
+            "race": pa.Column(
+                dtype=str,
+                checks=[
+                    pa.Check.isin(
+                        [
+                            "hispanic",
+                            "american indian/alaskan native",
+                            "asian",
+                            "native hawaiian/pacific islander",
+                            "black",
+                            "white",
+                            "two or more races",
+                        ]
+                    )
+                ],
+            ),
+            "sex": pa.Column(dtype=str, checks=[pa.Check.isin(["female", "male"])]),
+            args.value_col: pa.Column(
+                dtype=int, checks=[pa.Check.greater_than_or_equal_to(0)]
+            ),
+        }
+    )
+
     # load required yaml files
     drop_cols_kwds = load_yaml(args.drop_cols_kwds_yaml)
     variable_replace_values = load_yaml(args.variable_replace_values_yaml)
 
     print(
-        pd.read_csv(args.infile)
+        pd.read_csv(args.infile, dtype={"COMBOKEY": str})
         .rename(columns=lambda col: col.lower())
         # parse "JJ" yes/no column to python boolean
         .assign(
@@ -124,5 +168,7 @@ if __name__ == "__main__":
         .pipe(lambda df: df[~(df.value.isin(RESERVE_CODES.keys()))])
         # rename value column from parameter
         .rename(columns={"value": args.value_col})
-        .to_csv(line_terminator="\n")
+        .reset_index()
+        .pipe(schema)
+        .to_csv(index=False, line_terminator="\n")
     )
