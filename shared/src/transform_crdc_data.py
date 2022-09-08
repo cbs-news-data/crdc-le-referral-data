@@ -104,10 +104,8 @@ if __name__ == "__main__":
                     pa.Check.isin(
                         [
                             "overall",
-                            "limited english proficient",
-                            "enrolled in lep program",
+                            "without disabilities",
                             "idea",
-                            "section 504",
                         ]
                     )
                 ],
