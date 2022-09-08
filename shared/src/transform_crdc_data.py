@@ -7,7 +7,9 @@ to one row per category per school
 
 import argparse
 import sys
+from typing import Union
 import pandas as pd
+import yaml
 
 # import pandera as pa
 
@@ -22,16 +24,17 @@ RESERVE_CODES = {
 }
 
 REPLACE_VALUES = {
-    "variable": {
-        "enr": "overall",
-        "lepenr": "limited_english_proficient",
-        "lepprogenr": "enrolled_in_lep_program",
-        "ideaenr": "idea",
-        "504enr": "sec_504",
-    }
+    "race": {
+        "hi": "hispanic",
+        "am": "american indian/alaskan native",
+        "as": "asian",
+        "hp": "native hawaiian/pacific islander",
+        "bl": "black",
+        "wh": "white",
+        "tr": "two or more races",
+    },
+    "sex": {"f": "female", "m": "male"},
 }
-
-DROP_COLS_PATTERNS = [r"^tot_", r"_psenr_"]
 
 # from https://github.com/python/cpython/blob/main/Lib/distutils/util.py
 def strtobool(val: any) -> bool:
@@ -51,6 +54,13 @@ def strtobool(val: any) -> bool:
     raise ValueError(f"invalid truth value {val}")
 
 
+def load_yaml(path: str) -> Union[dict, list]:
+    """loads data from yaml"""
+
+    with open(path, "r", encoding="utf-8") as yaml_file:
+        return yaml.load(yaml_file, Loader=yaml.CLoader)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -60,15 +70,23 @@ if __name__ == "__main__":
         default=sys.stdin,
     )
     parser.add_argument(
-        "value_col", type=str, help="name of column to rename values column to"
+        "drop_cols_kwds_yaml",
+        type=str,
+        help="path to yaml file containing keywords to identify columns to drop",
     )
     parser.add_argument(
-        "outfile", nargs="?", type=argparse.FileType("w"), default=sys.stdout
+        "variable_replace_values_yaml",
+        type=str,
+        help="path to yaml file containing values to replace variables with",
+    )
+    parser.add_argument(
+        "value_col", type=str, help="name of column to rename values column to"
     )
     args = parser.parse_args()
 
-    # with open("hand/replace_vals", "r", encoding="utf-8") as yaml_file:
-    #     replace_vals = yaml.load(yaml_file, Loader=yaml.CLoader)
+    # load required yaml files
+    drop_cols_kwds = load_yaml(args.drop_cols_kwds_yaml)
+    variable_replace_values = load_yaml(args.variable_replace_values_yaml)
 
     print(
         pd.read_csv(args.infile)
@@ -85,8 +103,7 @@ if __name__ == "__main__":
         # drop total columns
         .pipe(
             lambda df: df.drop(
-                # TODO: parametrize the columns to drop
-                [c for c in df.columns if c.startswith("tot") or "psenr" in c],
+                [c for c in df.columns if any(kwd in c for kwd in drop_cols_kwds)],
                 axis=1,
             )
         )
@@ -100,7 +117,9 @@ if __name__ == "__main__":
             .assign(value=lambda _: df.value)
         )
         # replace values from constants
-        # .replace(REPLACE_VALUES)
+        .replace(REPLACE_VALUES)
+        # replace variables from yaml
+        .replace({"variable": variable_replace_values})
         # drop any rows contianing reserve codes
         .pipe(lambda df: df[~(df.value.isin(RESERVE_CODES.keys()))])
         # rename value column from parameter
