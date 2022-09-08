@@ -88,6 +88,7 @@ if __name__ == "__main__":
         help="path to yaml file containing keywords to identify columns to drop",
         default=None,
     )
+    parser.add_argument("--header", action=argparse.BooleanOptionalAction, default=True)
     args = parser.parse_args()
 
     # setup schema based on provided column name
@@ -183,5 +184,5 @@ if __name__ == "__main__":
         .rename(columns={"value": args.value_col})
         .reset_index()
         .pipe(schema)
-        .to_csv(index=False, line_terminator="\n")
+        .to_csv(index=False, line_terminator="\n", header=args.header)
     )
