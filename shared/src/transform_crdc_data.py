@@ -13,10 +13,21 @@ import yaml
 import pandera as pa
 
 # shared constants
-INDEX_COLS = ["combokey", "lea_state", "lea_name", "sch_name", "jj"]
-# dropping all LEP and 504 related columns because they don't
-# have detailed enough data on those kids
-DROP_COLS = ["tot_", "lea_state_name", "leaid", "schid", "lep", "504"]
+INDEX_COLS = ["combokey"]
+DROP_COLS = [
+    "lea_state",
+    "lea_name",
+    "sch_name",
+    "jj",
+    "tot_",
+    "lea_state_name",
+    "leaid",
+    "schid",
+    # dropping all LEP and 504 related columns because they don't
+    # have detailed enough data on those kids
+    "lep",
+    "504",
+]
 
 RESERVE_CODES = {
     -3: "Skip logic failure",
@@ -39,23 +50,6 @@ REPLACE_VALUES = {
     },
     "sex": {"f": "female", "m": "male"},
 }
-
-# from https://github.com/python/cpython/blob/main/Lib/distutils/util.py
-def strtobool(val: any) -> bool:
-    """
-    Converts a string representation of truth to true (1) or false (0).
-    True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
-    are 'n', 'no', 'f', 'false', 'off', and '0'.  Raises ValueError if
-    'val' is anything else.
-    """
-    val = val.lower()
-    if val in ("y", "yes", "t", "true", "on", "1"):
-        return True
-
-    if val in ("n", "no", "f", "false", "off", "0"):
-        return False
-
-    raise ValueError(f"invalid truth value {val}")
 
 
 def load_yaml(path: str) -> Union[dict, list]:
@@ -95,10 +89,6 @@ if __name__ == "__main__":
     schema = pa.DataFrameSchema(
         columns={
             "combokey": pa.Column(dtype=str),
-            "lea_state": pa.Column(dtype=str),
-            "lea_name": pa.Column(dtype=str),
-            "sch_name": pa.Column(dtype=str),
-            "jj": pa.Column(dtype=bool, nullable=False, unique=False),
             "variable": pa.Column(
                 dtype=str,
                 checks=[
@@ -145,12 +135,6 @@ if __name__ == "__main__":
     print(
         pd.read_csv(args.infile, dtype={"COMBOKEY": str})
         .rename(columns=lambda col: col.lower())
-        # parse "JJ" yes/no column to python boolean
-        .assign(
-            jj=lambda df: df.jj.apply(
-                lambda val: bool(strtobool(val)) if pd.notna(val) else val
-            )
-        )
         # set index to shared columns and drop unwanted columns
         .set_index(INDEX_COLS)
         .pipe(
