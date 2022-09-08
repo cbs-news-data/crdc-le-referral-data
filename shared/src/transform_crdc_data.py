@@ -13,6 +13,11 @@ import yaml
 import pandera as pa
 
 # shared constants
+INDEX_COLS = ["combokey", "lea_state", "lea_name", "sch_name", "jj"]
+# dropping all LEP and 504 related columns because they don't
+# have detailed enough data on those kids
+DROP_COLS = ["tot_", "lea_state_name", "leaid", "schid", "lep", "504"]
+
 RESERVE_CODES = {
     -3: "Skip logic failure",
     -5: "Action plan",
@@ -142,8 +147,12 @@ if __name__ == "__main__":
             )
         )
         # set index to shared columns and drop unwanted columns
-        .set_index(["combokey", "lea_state", "lea_name", "sch_name", "jj"])
-        .drop(["lea_state_name", "leaid", "schid"], axis=1)
+        .set_index(INDEX_COLS)
+        .pipe(
+            lambda df: df.drop(
+                [c for c in df.columns if any(kwd in c for kwd in DROP_COLS)], axis=1
+            )
+        )
         # drop total columns
         .pipe(
             lambda df: df.drop(
