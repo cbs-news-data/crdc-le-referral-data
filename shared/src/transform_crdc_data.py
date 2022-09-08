@@ -74,17 +74,19 @@ if __name__ == "__main__":
         default=sys.stdin,
     )
     parser.add_argument(
-        "drop_cols_kwds_yaml",
-        type=str,
-        help="path to yaml file containing keywords to identify columns to drop",
-    )
-    parser.add_argument(
         "variable_replace_values_yaml",
         type=str,
         help="path to yaml file containing values to replace variables with",
     )
     parser.add_argument(
         "value_col", type=str, help="name of column to rename values column to"
+    )
+    parser.add_argument(
+        "--drop_cols_kwds_yaml",
+        "-d",
+        type=str,
+        help="path to yaml file containing keywords to identify columns to drop",
+        default=None,
     )
     args = parser.parse_args()
 
@@ -133,9 +135,13 @@ if __name__ == "__main__":
         }
     )
 
-    # load required yaml files
-    drop_cols_kwds = load_yaml(args.drop_cols_kwds_yaml)
+    # load yaml files
     variable_replace_values = load_yaml(args.variable_replace_values_yaml)
+
+    if args.drop_cols_kwds_yaml is None:
+        drop_cols_kwds = {}
+    else:
+        drop_cols_kwds = load_yaml(args.drop_cols_kwds_yaml)
 
     print(
         pd.read_csv(args.infile, dtype={"COMBOKEY": str})
