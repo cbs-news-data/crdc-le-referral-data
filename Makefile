@@ -1,14 +1,12 @@
 SHELL := /bin/bash
 
-# TASKS := \
-#     your \
-#     tasks \
-#     here
+TASKS := \
+    transform
 
 .PHONY: \
 	  all \
-	  cleanup # \
-#	  $(TASKS)
+	  cleanup \
+	  $(TASKS)
 
 all: $(TASKS)
 
