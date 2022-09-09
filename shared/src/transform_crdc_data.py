@@ -94,16 +94,16 @@ if __name__ == "__main__":
                     pa.Check.isin(
                         [
                             "overall",
-                            "without disabilities",
+                            "without_disabilities",
                             "idea",
-                            "section 504",
+                            "section_504",
                         ]
                     )
                 ],
             ),
             "race": pa.Column(
                 dtype=str,
-                nullable=True,  # for section 504 referral/arrest data which has no race
+                nullable=True,  # for section_504 referral/arrest data which has no race
                 checks=[
                     pa.Check.isin(
                         [
@@ -161,7 +161,7 @@ if __name__ == "__main__":
         )
         # replace empty strings in newly-created columns with np.NaN if applicable
         # this allows data for which there is no race component
-        # (i.e. referral and arrest section 504 data)
+        # (i.e. referral and arrest section_504 data)
         .replace("", np.NaN)
         # replace values from constants
         .replace(REPLACE_VALUES)

@@ -1,5 +1,5 @@
 """
-fixes variable names for section 504 variables that
+fixes variable names for section_504 variables that
 don't conform to the var_race_sex format
 """
 
