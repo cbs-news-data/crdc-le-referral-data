@@ -8,12 +8,14 @@ to one row per category per school
 import argparse
 import sys
 from typing import Union
+import numpy as np
 import pandas as pd
-import yaml
 import pandera as pa
+import yaml
 
 # shared constants
 INDEX_COLS = ["combokey"]
+
 DROP_COLS = [
     "lea_state",
     "lea_name",
@@ -23,10 +25,7 @@ DROP_COLS = [
     "lea_state_name",
     "leaid",
     "schid",
-    # dropping all LEP and 504 related columns because they don't
-    # have detailed enough data on those kids
     "lep",
-    "504",
 ]
 
 RESERVE_CODES = {
@@ -97,12 +96,14 @@ if __name__ == "__main__":
                             "overall",
                             "without disabilities",
                             "idea",
+                            "section 504",
                         ]
                     )
                 ],
             ),
             "race": pa.Column(
                 dtype=str,
+                nullable=True,  # for section 504 referral/arrest data which has no race
                 checks=[
                     pa.Check.isin(
                         [
@@ -158,6 +159,10 @@ if __name__ == "__main__":
             .rename(columns={1: "variable", 2: "race", 3: "sex"})
             .assign(value=lambda _: df.value)
         )
+        # replace empty strings in newly-created columns with np.NaN if applicable
+        # this allows data for which there is no race component
+        # (i.e. referral and arrest section 504 data)
+        .replace("", np.NaN)
         # replace values from constants
         .replace(REPLACE_VALUES)
         # replace variables from yaml

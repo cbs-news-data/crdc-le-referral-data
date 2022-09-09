@@ -10,6 +10,7 @@ output/referrals.csv: \
 		src/transform_crdc_data.py \
 		hand/variable_replace_values.yaml
 	python $^ --referrals | \
+		python src/fix_504_variables.py | \
 		python src/transform_crdc_data.py \
 		hand/variable_replace_values.yaml \
 		referrals \
