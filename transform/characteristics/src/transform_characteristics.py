@@ -1,6 +1,5 @@
 """performs specific transformations on school characteristics file"""
 
-import json
 import sys
 import pandas as pd
 
@@ -29,9 +28,6 @@ def all_cols_to_bool(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-with open(sys.argv[2], "r", encoding="utf-8") as file:
-    states = json.load(file)
-
 print(
     pd.read_csv(sys.argv[1])
     .rename(columns=lambda col: col.lower())[
@@ -39,7 +35,7 @@ print(
             "combokey",
             "sch_name",
             "lea_name",
-            "lea_state",
+            "lea_state_name",
             "jj",
             "sch_grade_g01",
             "sch_grade_g02",
@@ -55,13 +51,14 @@ print(
             "sch_grade_g12",
         ]
     ]
-    .replace({"lea_state": states})
+    # convert state names to title case
+    .assign(lea_state_name=lambda df: df.lea_state_name.str.title())
     .set_index(
         [
             "combokey",
             "sch_name",
             "lea_name",
-            "lea_state",
+            "lea_state_name",
             "jj",
         ]
     )
