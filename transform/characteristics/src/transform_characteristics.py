@@ -59,7 +59,6 @@ print(
             "sch_name",
             "lea_name",
             "lea_state_name",
-            "jj",
         ]
     )
     .pipe(all_cols_to_bool)
