@@ -6,6 +6,7 @@ to one row per category per school
 """
 
 import argparse
+import re
 import sys
 from typing import Union
 import numpy as np
@@ -14,15 +15,15 @@ import pandera as pa
 import yaml
 
 # shared constants
-INDEX_COLS = ["combokey"]
+INDEX_COLS = ["combokey", "lea_state_name", "sch_name"]
 
 DROP_COLS = [
-    "lea_state",
+    "lea_state$",
     "lea_name",
-    "sch_name",
+    # "sch_name",
     "jj",
     "tot_",
-    "lea_state_name",
+    # "lea_state_name",
     "leaid",
     "schid",
     "lep",
@@ -88,6 +89,8 @@ if __name__ == "__main__":
     schema = pa.DataFrameSchema(
         columns={
             "combokey": pa.Column(dtype=str),
+            "sch_name": pa.Column(dtype=str),
+            "lea_state_name": pa.Column(dtype=str),
             "variable": pa.Column(
                 dtype=str,
                 checks=[
@@ -120,7 +123,9 @@ if __name__ == "__main__":
             ),
             "sex": pa.Column(dtype=str, checks=[pa.Check.isin(["female", "male"])]),
             args.value_col: pa.Column(
-                dtype=int, checks=[pa.Check.greater_than_or_equal_to(0)]
+                dtype=float,
+                nullable=True,
+                checks=[pa.Check.greater_than_or_equal_to(0)],
             ),
         }
     )
@@ -140,7 +145,12 @@ if __name__ == "__main__":
         .set_index(INDEX_COLS)
         .pipe(
             lambda df: df.drop(
-                [c for c in df.columns if any(kwd in c for kwd in DROP_COLS)], axis=1
+                [
+                    c
+                    for c in df.columns
+                    if any(re.search(kwd, c) is not None for kwd in DROP_COLS)
+                ],
+                axis=1,
             )
         )
         # drop total columns
@@ -167,8 +177,10 @@ if __name__ == "__main__":
         .replace(REPLACE_VALUES)
         # replace variables from yaml
         .replace({"variable": variable_replace_values})
-        # drop any rows contianing reserve codes
-        .pipe(lambda df: df[~(df.value.isin(RESERVE_CODES.keys()))])
+        # replace any values contianing reserve codes
+        .replace(
+            {"value": dict(zip(RESERVE_CODES.keys(), [np.NaN for _ in RESERVE_CODES]))}
+        )
         # rename value column from parameter
         .rename(columns={"value": args.value_col})
         .reset_index()
