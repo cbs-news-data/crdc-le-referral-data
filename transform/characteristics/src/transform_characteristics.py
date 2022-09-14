@@ -51,8 +51,6 @@ print(
             "sch_grade_g12",
         ]
     ]
-    # convert state names to title case
-    .assign(lea_state_name=lambda df: df.lea_state_name.str.title())
     .set_index(
         [
             "combokey",
