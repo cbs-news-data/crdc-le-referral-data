@@ -15,3 +15,5 @@ pandera[io]
 # utilities
 tqdm
 pyyaml
+
+papermill
