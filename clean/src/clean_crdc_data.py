@@ -1,11 +1,16 @@
 """contains shared functions for cleaning data"""
 
 import argparse
+import logging
 import re
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import constants
+
+logging.basicConfig(
+    filename="output/clean_crdc_data.log", filemode="w", level=logging.INFO
+)
 
 
 def read_file(file_path: str) -> pd.DataFrame:
@@ -88,7 +93,6 @@ def preprocess_df(df: pd.DataFrame, year) -> pd.DataFrame:
         .pipe(get_max_grade)
         .pipe(drop_duplicates_keep_most_complete)
         .assign(year=year)
-        .rename(columns=lambda col: col.lower())
     )
 
 
@@ -138,9 +142,120 @@ def read_stack_dfs(*filenames) -> pd.DataFrame:
     return pd.concat(dfs)
 
 
+def calculate_totals(df: pd.DataFrame) -> pd.DataFrame:
+    """calculates total columns"""
+    # assign overall totals
+    df["total_arrests"] = (
+        df.TOT_DISCWDIS_ARR_IDEA_F
+        + df.TOT_DISCWDIS_ARR_IDEA_M
+        + df.TOT_DISCWODIS_ARR_F
+        + df.TOT_DISCWODIS_ARR_M
+    )
+    df["total_referrals"] = (
+        df.TOT_DISCWDIS_REF_IDEA_F
+        + df.TOT_DISCWDIS_REF_IDEA_M
+        + df.TOT_DISCWODIS_REF_F
+        + df.TOT_DISCWODIS_REF_M
+    )
+    df["total_referrals_arrests"] = df.total_arrests + df.total_referrals
+    df["total_enrollment"] = df.TOT_ENR_F + df.TOT_ENR_M
+
+    # assign totals by race
+    for race_abbr in constants.RACE_VALUES:
+        abbr_upper = race_abbr.upper()
+        df[f"total_arrests_{race_abbr}"] = (
+            df[f"SCH_DISCWDIS_ARR_IDEA_{abbr_upper}_F"]
+            + df[f"SCH_DISCWDIS_ARR_IDEA_{abbr_upper}_M"]
+            + df[f"SCH_DISCWODIS_ARR_{abbr_upper}_F"]
+            + df[f"SCH_DISCWODIS_ARR_{abbr_upper}_M"]
+        )
+        df[f"total_referrals_{race_abbr}"] = (
+            df[f"SCH_DISCWDIS_REF_IDEA_{abbr_upper}_F"]
+            + df[f"SCH_DISCWDIS_REF_IDEA_{abbr_upper}_M"]
+            + df[f"SCH_DISCWODIS_REF_{abbr_upper}_F"]
+            + df[f"SCH_DISCWODIS_REF_{abbr_upper}_M"]
+        )
+        df[f"total_enrollment_{race_abbr}"] = (
+            df[f"SCH_ENR_{abbr_upper}_F"] + df[f"SCH_ENR_{abbr_upper}_M"]
+        )
+
+    # assign totals for disability status
+    df["total_arrests_idea"] = df.TOT_DISCWDIS_ARR_IDEA_F + df.TOT_DISCWDIS_ARR_IDEA_M
+    df["total_arrests_nondis"] = df.TOT_DISCWODIS_ARR_F + df.TOT_DISCWODIS_ARR_M
+    df["total_referrals_idea"] = df.TOT_DISCWDIS_REF_IDEA_F + df.TOT_DISCWDIS_REF_IDEA_M
+    df["total_referrals_nondis"] = df.TOT_DISCWODIS_REF_F + df.TOT_DISCWODIS_REF_M
+    df["total_enrollment_idea"] = df.TOT_IDEAENR_F + df.TOT_IDEAENR_M
+    df["total_enrollment_nondis"] = df.TOT_ENR_F + df.TOT_ENR_M
+
+    return df
+
+
+def drop_rows_with_data_entry_errors(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    drops rows with inaccurate data due to data entry errors
+
+    see bulletproof/drop_rows_with_data_entry_errors.py for more details
+    """
+    # drop rows with arrest or enrollment rates over 100%
+    start_len = len(df)
+    df = df.query(
+        "~(total_arrests > total_enrollment | total_referrals > total_enrollment)"
+    )
+    logging.info(
+        "dropped %s rows with arrest or referral rates over 100%%", start_len - len(df)
+    )
+
+    # drop rows with more arrests than referrals
+    start_len = len(df)
+    df = df.query("~(total_arrests > total_referrals)")
+    logging.info(
+        "dropped %s rows with more arrests than referrals", start_len - len(df)
+    )
+
+    # drop schools with very high totals and near-identical arrest and referral rates
+    # assign temporary columns to make the query easier to read
+    df = df.assign(
+        grade_category=lambda df: df.apply(
+            lambda row: "high school"
+            if row.max_grade in range(10, 13)
+            else "middle school"
+            if row.max_grade in range(7, 10)
+            else "elementary school"
+            if row.max_grade in range(1, 7)
+            else "other",
+            axis=1,
+        )
+    )
+    # create a dataframe of thresholds for each grade category and year
+    threshold_df = (
+        df.groupby(["grade_category", "year"])
+        .total_referrals_arrests.quantile(0.999)
+        .to_frame("threshold")
+    )
+    # merge the thresholds into the main dataframe and drop rows that meet criteria
+    start_len = len(df)
+    close_vals = list(range(0, 3))  # pylint: disable=unused-variable
+    df = df.merge(
+        threshold_df, left_on=["grade_category", "year"], right_index=True
+    ).query(
+        "~(total_referrals_arrests > threshold "
+        "& abs(total_arrests - total_referrals) in @close_vals)"
+    )
+    logging.info(
+        "dropped %s rows with very high totals and near-identical arrest and referral rates",
+        start_len - len(df),
+    )
+    return df
+
+
 def main(*input_files, output_file):
     """main function"""
-    read_stack_dfs(*input_files).to_csv(output_file, index=False)
+    (
+        read_stack_dfs(*input_files)
+        .pipe(calculate_totals)
+        .pipe(drop_rows_with_data_entry_errors)
+        .to_csv(output_file, index=False)
+    )
 
 
 if __name__ == "__main__":

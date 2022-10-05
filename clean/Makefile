@@ -1,3 +1,4 @@
+# additional files generated: output/clean_crdc_data.log
 GENERATED_FILES: output/crdc-referrals-arrests-cleaned.csv
 
 all: $(GENERATED_FILES)

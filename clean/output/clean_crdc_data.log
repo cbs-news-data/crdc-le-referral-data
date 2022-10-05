@@ -1,0 +1,3 @@
+INFO:root:dropped 12 rows with arrest or referral rates over 100%
+INFO:root:dropped 2284 rows with more arrests than referrals
+INFO:root:dropped 49 rows with very high totals and near-identical arrest and referral rates
