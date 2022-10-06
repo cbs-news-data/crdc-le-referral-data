@@ -73,7 +73,7 @@ def drop_duplicates_keep_most_complete(df: pd.DataFrame) -> pd.DataFrame:
             )
         )
         .sort_values("completeness_score", ascending=False)
-        .drop_duplicates(subset=["COMBOKEY"], keep="first")
+        .drop_duplicates(subset=["LEAID", "SCHID"], keep="first")
         .drop("completeness_score", axis=1)
     )
 
@@ -248,12 +248,36 @@ def drop_rows_with_data_entry_errors(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def drop_unwanted_schools(df: pd.DataFrame) -> pd.DataFrame:
+    """drops schools that are too small, or are alternative or juvenile justice schools"""
+
+    def does_not_contain_keyword(sch_name):
+        """checks if school name contains keywords"""
+        for keyword in constants.DROP_SCHOOLS_KWDS:
+            if re.search(keyword, sch_name, re.IGNORECASE):
+                return False
+        return True
+
+    start_len = len(df)
+    df = (
+        df.query("total_enrollment >= 50")
+        .query("JJ == 'No'")
+        .query("SCH_STATUS_ALT == 'No'")
+        .pipe(lambda df: df[df.SCH_NAME.apply(does_not_contain_keyword)])
+    )
+    logging.info(
+        "dropped %s schools that were alternative or too small", start_len - len(df)
+    )
+    return df
+
+
 def main(*input_files, output_file):
     """main function"""
     (
         read_stack_dfs(*input_files)
         .pipe(calculate_totals)
         .pipe(drop_rows_with_data_entry_errors)
+        .pipe(drop_unwanted_schools)
         .to_csv(output_file, index=False)
     )
 
