@@ -38,6 +38,10 @@ Use these summary lines as a starting point for your local package.
 
 > Of those who had police called on them, {{ _1718_state_total_referrals_idea |int }} had disabilities, and {{ _1718_state_total_referrals_nondis |int }} didn't have disabilities. 
 
+### Want more data? 
+
+[Click here to download the spreadsheet](https://viacom.sharepoint.com/:f:/s/VCBS-PROD-Investigative-AllStations/El64wjYJ_5RGtTm5fyx1ULwBYuu0n0t_7issoEO3A3j2iA?e=49l0eM)
+
 ## Attribution
 
 All references to this data analysis must be attributed to CBS News' analysis of this data. 
@@ -60,6 +64,16 @@ The data used in this analysis is from the 2017-2018 Civil Rights Data Collectio
 
 The 2017-2018 survey is the most recent data available. We're told by the Department of Education that the new data won't be released until 2023.
 
+### The "hispanic" numbers for my state look off. Are you sure this is correct? 
+
+Some school districts appear to have reported inaccurate data for hispanic students and may have incorrectly classified some Hispanic students as white. That may be the case for your state or districts in your area. 
+
+### These numbers seem low. Are you sure this is correct? 
+
+Although they do happen hundreds of times every year, arrests of very young children are quite rare when compared to the size of the total population. This means that, for some states, the numbers are quite low. 
+
+Data reporting problems can also contribute. Some large school districts like Chicago Public Schools, for example, report large numbers of referrals but zero arrests. The CRDC doesn't take any steps to verify that these zero values are actually correct, so it's possible some data is under-reported. Therefore, the numbers in this report should be interpreted as the lowest possible value, i.e. there are "at least" 715 arrests nationwide. 
+
 ### What does "X" mean? 
 
 Here are definitions of most of the terms used in this analysis: 
@@ -71,13 +85,13 @@ Here are definitions of most of the terms used in this analysis:
 
 ### How do I know this data is accurate? 
 
-We undertook a rigorous data cleaning and verification process prior to this analysis, which included us contacting individual school districts and state education departments to verify their data. If we weren't confident about a school's data, we removed that school from the analysis, and took steps to ensure other schools with similar issues were also removed. 
+We undertook a rigorous data cleaning and verification process prior to this analysis, which included us contacting individual school districts and state education departments to verify their data. If we weren't confident about a school's numbers, we removed that school from the analysis and took steps to ensure other schools with similar issues were also removed. 
 
 We dropped schools that met any of the following criteria: 
 1. Data entry errors
     - We were able to identify a small number of schools that had arrest or referral rates over 100%, which shouldn't be possible according to the CRDC data manual. 
-    - We also identified a larger number of schools with more arrests than referrals. This should not be the case, as all arrests are considered referrals but not all referrals are considered arrests. 
-    - We dropped a small number of schools with extremely high arrest and referral totals
+    - We identified a larger number of schools with more arrests than referrals. This should not be the case, as all arrests are considered referrals but not all referrals are considered arrests. 
+    - We also dropped a small number of schools with extremely high arrest and referral totals
 2. Alternative schools and juvenile justice facilities
 3. Schools with fewer than 50 students
 4. Online-only schools
