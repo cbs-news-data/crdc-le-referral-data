@@ -91,6 +91,70 @@ def preprocess_df(df: pd.DataFrame, year) -> pd.DataFrame:
     )
 
 
+def calculate_totals(df: pd.DataFrame) -> pd.DataFrame:
+    """calculates total columns"""
+    # assign overall totals
+    df["total_arrests"] = (
+        df.TOT_DISCWDIS_ARR_IDEA_F
+        + df.TOT_DISCWDIS_ARR_IDEA_M
+        + df.TOT_DISCWODIS_ARR_F
+        + df.TOT_DISCWODIS_ARR_M
+    )
+    df["total_referrals"] = (
+        df.TOT_DISCWDIS_REF_IDEA_F
+        + df.TOT_DISCWDIS_REF_IDEA_M
+        + df.TOT_DISCWODIS_REF_F
+        + df.TOT_DISCWODIS_REF_M
+    )
+    df["total_referrals_arrests"] = df.total_arrests + df.total_referrals
+    df["total_enrollment"] = df.TOT_ENR_F + df.TOT_ENR_M
+
+    # assign totals by race
+    for race_abbr in constants.RACE_VALUES:
+        abbr_upper = race_abbr.upper()
+        df[f"total_arrests_{race_abbr}"] = (
+            df[f"SCH_DISCWDIS_ARR_IDEA_{abbr_upper}_F"]
+            + df[f"SCH_DISCWDIS_ARR_IDEA_{abbr_upper}_M"]
+            + df[f"SCH_DISCWODIS_ARR_{abbr_upper}_F"]
+            + df[f"SCH_DISCWODIS_ARR_{abbr_upper}_M"]
+        )
+        df[f"total_referrals_{race_abbr}"] = (
+            df[f"SCH_DISCWDIS_REF_IDEA_{abbr_upper}_F"]
+            + df[f"SCH_DISCWDIS_REF_IDEA_{abbr_upper}_M"]
+            + df[f"SCH_DISCWODIS_REF_{abbr_upper}_F"]
+            + df[f"SCH_DISCWODIS_REF_{abbr_upper}_M"]
+        )
+        df[f"total_enrollment_{race_abbr}"] = (
+            df[f"SCH_ENR_{abbr_upper}_F"] + df[f"SCH_ENR_{abbr_upper}_M"]
+        )
+
+    # assign totals for disability status
+    df["total_arrests_idea"] = df.TOT_DISCWDIS_ARR_IDEA_F + df.TOT_DISCWDIS_ARR_IDEA_M
+    df["total_arrests_nondis"] = df.TOT_DISCWODIS_ARR_F + df.TOT_DISCWODIS_ARR_M
+    df["total_referrals_idea"] = df.TOT_DISCWDIS_REF_IDEA_F + df.TOT_DISCWDIS_REF_IDEA_M
+    df["total_referrals_nondis"] = df.TOT_DISCWODIS_REF_F + df.TOT_DISCWODIS_REF_M
+    df["total_enrollment_idea"] = df.TOT_IDEAENR_F + df.TOT_IDEAENR_M
+    df["total_enrollment_nondis"] = df.TOT_ENR_F + df.TOT_ENR_M
+
+    return df
+
+
+def read_segmented_dfs(*filenames) -> pd.DataFrame:
+    """reads and stacks the dataframes"""
+    df = (
+        pd.DataFrame()
+        .join(
+            [
+                read_file(f).pipe(select_cols).set_index(constants.INDEX_COLS)
+                for f in filenames
+            ],
+            how="outer",
+        )
+        .reset_index()
+    )
+    return df
+
+
 def read_stack_dfs(*filenames) -> pd.DataFrame:
     """reads and stacks the dataframes"""
     dfs = []
@@ -108,21 +172,25 @@ def read_stack_dfs(*filenames) -> pd.DataFrame:
                     )
                 )
 
-    #         case tuple() | list():
-    #             dfs.append(
-    #                 preprocess_df(
-    #                     read_segmented_dfs(*filename), get_school_year(filename[0])
-    #                 )
-    #             )
+            case tuple() | list():
+                dfs.append(
+                    preprocess_df(
+                        read_segmented_dfs(*filename), get_school_year(filename[0])
+                    )
+                )
 
-    #         case _:
-    #             raise ValueError(f"unknown filename type {type(filename)}")
+            case _:
+                raise ValueError(f"unknown filename type {type(filename)}")
 
-    # return pd.concat(dfs)
+    return pd.concat(dfs)
 
 
 def main(*input_files, output_file):
-    (read_stack_dfs(*input_files))
+    (
+        read_stack_dfs(*input_files)
+        .pipe(calculate_totals)
+        .to_csv(output_file, index=False)
+    )
 
 
 if __name__ == "__main__":
