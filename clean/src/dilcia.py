@@ -139,6 +139,87 @@ def calculate_totals(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def drop_rows_with_data_entry_errors(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    drops rows with inaccurate data due to data entry errors
+
+    see bulletproof/drop_rows_with_data_entry_errors.py for more details
+    """
+    # drop rows with arrest or enrollment rates over 100%
+    start_len = len(df)
+    df = df.query(
+        "~(total_arrests > total_enrollment | total_referrals > total_enrollment)"
+    )
+    logging.info(
+        "dropped %s rows with arrest or referral rates over 100%%", start_len - len(df)
+    )
+
+    # drop rows with more arrests than referrals
+    start_len = len(df)
+    df = df.query("~(total_arrests > total_referrals)")
+    logging.info(
+        "dropped %s rows with more arrests than referrals", start_len - len(df)
+    )
+
+    # drop schools with very high totals and near-identical arrest and referral rates
+    # assign temporary columns to make the query easier to read
+    df = df.assign(
+        grade_category=lambda df: df.apply(
+            lambda row: "high school"
+            if row.max_grade in range(10, 13)
+            else "middle school"
+            if row.max_grade in range(7, 10)
+            else "elementary school"
+            if row.max_grade in range(1, 7)
+            else "other",
+            axis=1,
+        )
+    )
+    # create a dataframe of thresholds for each grade category and year
+    threshold_df = (
+        df.groupby(["grade_category", "year"])
+        .total_referrals_arrests.quantile(0.999)
+        .to_frame("threshold")
+    )
+    # merge the thresholds into the main dataframe and drop rows that meet criteria
+    start_len = len(df)
+    close_vals = list(range(0, 3))  # pylint: disable=unused-variable
+    df = df.merge(
+        threshold_df, left_on=["grade_category", "year"], right_index=True
+    ).query(
+        "~(total_referrals_arrests > threshold "
+        "& abs(total_arrests - total_referrals) in @close_vals)"
+    )
+    logging.info(
+        "dropped %s rows with very high totals and near-identical arrest and referral rates",
+        start_len - len(df),
+    )
+    return df
+
+
+def drop_unwanted_schools(df: pd.DataFrame) -> pd.DataFrame:
+    """drops schools that are too small, or are alternative or juvenile justice schools"""
+
+    def does_not_contain_keyword(sch_name):
+        """checks if school name contains keywords"""
+        for keyword in constants.DROP_SCHOOLS_KWDS:
+            if re.search(keyword, sch_name, re.IGNORECASE):
+                return False
+        return True
+
+    start_len = len(df)
+    df = (
+        df.query("total_enrollment >= 50")
+        .query("JJ == 'No'")
+        .query("SCH_STATUS_ALT == 'No'")
+        .pipe(lambda df: df[df.SCH_NAME.apply(does_not_contain_keyword)])
+    )
+    logging.info(
+        "dropped %s schools that were alternative or too small", start_len - len(df)
+    )
+    return df
+
+
 def read_segmented_dfs(*filenames) -> pd.DataFrame:
     """reads and stacks the dataframes"""
     df = (
@@ -189,6 +270,8 @@ def main(*input_files, output_file):
     (
         read_stack_dfs(*input_files)
         .pipe(calculate_totals)
+        .pipe(drop_rows_with_data_entry_errors)
+        .pipe(drop_unwanted_schools)
         .to_csv(output_file, index=False)
     )
 

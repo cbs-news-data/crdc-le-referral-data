@@ -1,0 +1,4 @@
+INFO:root:dropped 18 rows with arrest or referral rates over 100%
+INFO:root:dropped 2985 rows with more arrests than referrals
+INFO:root:dropped 64 rows with very high totals and near-identical arrest and referral rates
+INFO:root:dropped 23955 schools that were alternative or too small
