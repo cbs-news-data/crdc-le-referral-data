@@ -11,7 +11,28 @@ logging.basicConfig(
 )
 
 
+def drop_reserve_codes(df: pd.DataFrame) -> pd.DataFrame:
+    """drops reserve codes from the dataframe"""
+    return (
+        df.set_index(constants.TEXT_COLS).pipe(lambda d: d.mask(d.lt(0))).reset_index()
+    )  # is this where you mask the negative numbers?
+
+
 # going through script line by line to make sure I understand the code & filters
+def get_max_grade(df: pd.DataFrame) -> pd.DataFrame:
+    """gets the max grade from the grade range"""
+
+    def get_grade_for_row(row):
+        true_cols = [
+            (k, v) for k, v in row.items() if k in constants.GRADE_COLS and v == "Yes"
+        ]
+        if len(true_cols) == 0:
+            return np.NaN
+        return int(re.search(r"(?<=SCH_GRADE_G)\d{1,2}$", true_cols[-1][0]).group())
+
+    return df.assign(max_grade=df.apply(get_grade_for_row, axis=1)).drop(
+        constants.GRADE_COLS, axis=1
+    )
 
 
 def select_cols(df: pd.DataFrame) -> pd.DataFrame:
@@ -25,8 +46,8 @@ def preprocess_df(df: pd.DataFrame, year) -> pd.DataFrame:
     """preprocesses the dataframe"""
     return (
         df.pipe(select_cols)
-        # .pipe(drop_reserve_codes)
-        # .pipe(get_max_grade)
+        .pipe(drop_reserve_codes)
+        .pipe(get_max_grade)
         # .pipe(drop_duplicates_keep_most_complete)
         # .assign(year=year)
     )
