@@ -6,9 +6,21 @@ import pandas as pd
 from tqdm import tqdm
 import constants
 
+# going through script line by line to make sure I understand the code & filters
+
+
 logging.basicConfig(
     filename="output/clean_crdc_data.log", filemode="w", level=logging.INFO
 )
+
+
+def read_file(file_path: str) -> pd.DataFrame:
+    """Reads a file and returns a dataframe"""
+    if file_path.endswith(".csv") or file_path.endswith(".csv.gz"):
+        return pd.read_csv(file_path, encoding="latin-1", low_memory=False)
+    if file_path.endswith(".xlsx"):
+        return pd.read_excel(file_path)
+    raise ValueError("File type not supported")
 
 
 def drop_reserve_codes(df: pd.DataFrame) -> pd.DataFrame:
@@ -18,7 +30,19 @@ def drop_reserve_codes(df: pd.DataFrame) -> pd.DataFrame:
     )  # is this where you mask the negative numbers?
 
 
-# going through script line by line to make sure I understand the code & filters
+def get_school_year(school_year: str) -> int:
+    """gets the year from the school year"""
+    school_match = re.search(r"\d{4}-\d{2}", school_year)
+    if school_match:
+        return int(school_match.group()[:4])
+
+    school_match = re.search(r"\d{4}", school_year)
+    if school_match:
+        return int("20" + school_match.group()[:2])
+
+    raise ValueError(f"couldn't extract school year from {school_year}")
+
+
 def get_max_grade(df: pd.DataFrame) -> pd.DataFrame:
     """gets the max grade from the grade range"""
 
@@ -35,6 +59,20 @@ def get_max_grade(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+def drop_duplicates_keep_most_complete(df: pd.DataFrame) -> pd.DataFrame:
+    """drops duplicates and keeps the most complete row"""
+    return (
+        df.assign(
+            completeness_score=lambda df: df.apply(
+                lambda row: sum(1 for key in row.index if pd.notna(row[key])), axis=1
+            )
+        )
+        .sort_values("completeness_score", ascending=False)
+        .drop_duplicates(subset=["LEAID", "SCHID"], keep="first")
+        .drop("completeness_score", axis=1)
+    )
+
+
 def select_cols(df: pd.DataFrame) -> pd.DataFrame:
     """selects columns from the dataframe"""
     return df.set_index([c for c in df.columns if c in constants.TEXT_COLS])[
@@ -48,8 +86,8 @@ def preprocess_df(df: pd.DataFrame, year) -> pd.DataFrame:
         df.pipe(select_cols)
         .pipe(drop_reserve_codes)
         .pipe(get_max_grade)
-        # .pipe(drop_duplicates_keep_most_complete)
-        # .assign(year=year)
+        .pipe(drop_duplicates_keep_most_complete)
+        .assign(year=year)
     )
 
 
@@ -65,8 +103,8 @@ def read_stack_dfs(*filenames) -> pd.DataFrame:
             case str():  # don't totally understand this line # is this to distinguish between reading in one file & reading in many?
                 dfs.append(
                     preprocess_df(
-                        # read_file(filename),
-                        # get_school_year(filename),
+                        read_file(filename),
+                        get_school_year(filename),
                     )
                 )
 
