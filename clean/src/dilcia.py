@@ -10,7 +10,26 @@ logging.basicConfig(
     filename="output/clean_crdc_data.log", filemode="w", level=logging.INFO
 )
 
+
 # going through script line by line to make sure I understand the code & filters
+
+
+def select_cols(df: pd.DataFrame) -> pd.DataFrame:
+    """selects columns from the dataframe"""
+    return df.set_index([c for c in df.columns if c in constants.TEXT_COLS])[
+        [c for c in df.columns if c in constants.NUMERIC_COLS]
+    ].reset_index()  # cols pulled from constants.py file
+
+
+def preprocess_df(df: pd.DataFrame, year) -> pd.DataFrame:
+    """preprocesses the dataframe"""
+    return (
+        df.pipe(select_cols)
+        # .pipe(drop_reserve_codes)
+        # .pipe(get_max_grade)
+        # .pipe(drop_duplicates_keep_most_complete)
+        # .assign(year=year)
+    )
 
 
 def read_stack_dfs(*filenames) -> pd.DataFrame:
