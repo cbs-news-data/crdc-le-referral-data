@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "CRDC LE referral and arrest data"
+version = "0.1.0"
+description = "Data processing and analysis for CRDC discipline data."
+authors = ["Chris Hacker <cmhacker@cbs.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "*"
+csvkit = "*"
+openpyxl = "*"
+geopandas = "*"
+rtree = "*"
+matplotlib = "*"
+pandera = {extras = ["io"], version = "*"}
+tqdm = "*"
+pyyaml = "*"
+papermill = "*"
+jinja2 = "*"
+
+[tool.poetry.dev-dependencies]
+black = "*"
+pylint = "*"
+jupyter = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
