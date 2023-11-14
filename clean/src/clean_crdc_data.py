@@ -261,8 +261,8 @@ def drop_unwanted_schools(df: pd.DataFrame) -> pd.DataFrame:
     start_len = len(df)
     df = (
         df.query("total_enrollment >= 50")
-        .query("JJ == 'No'")
-        .query("SCH_STATUS_ALT == 'No'")
+        .query("JJ == 'No' | JJ == False")
+        .query("SCH_STATUS_ALT == 'No' | SCH_STATUS_ALT == False")
         .pipe(lambda df: df[df.SCH_NAME.apply(does_not_contain_keyword)])
     )
     logging.info(
