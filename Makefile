@@ -10,15 +10,13 @@ TASKS := clean notebooks
 
 all: $(TASKS)
 
-$(TASKS): venv/bin/activate
+$(TASKS): .venv/bin/activate
 	source $< && $(MAKE) -C $@
 
-init: venv/bin/activate
+init: .venv/bin/activate
 
-venv/bin/activate: requirements.txt
-	if [ ! -f $@ ]; then virtualenv venv; fi
-	source $@ && pip install -r $<
-	touch $@
+.venv/bin/activate: pyproject.toml
+	poetry install
 
 cleanup:
 	for d in $(TASKS) ; do \
