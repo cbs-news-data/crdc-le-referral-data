@@ -3,6 +3,9 @@ name = "CRDC LE referral and arrest data"
 version = "0.1.0"
 description = "Data processing and analysis for CRDC discipline data."
 authors = ["Chris Hacker <cmhacker@cbs.com>"]
+packages = [
+    { include = "*", from = "src" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
