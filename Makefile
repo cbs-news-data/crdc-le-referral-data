@@ -4,7 +4,7 @@ TASKS := clean notebooks
 
 .PHONY: \
 	  all \
-	  init \
+	  setup \
 	  cleanup \
 	  $(TASKS)
 
@@ -13,7 +13,7 @@ all: $(TASKS)
 $(TASKS): .venv/bin/activate
 	source $< && $(MAKE) -C $@ -j 4
 
-init: .venv/bin/activate
+setup: .venv/bin/activate
 
 .venv/bin/activate: pyproject.toml
 	poetry install --no-root
