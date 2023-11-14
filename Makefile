@@ -16,7 +16,7 @@ $(TASKS): .venv/bin/activate
 init: .venv/bin/activate
 
 .venv/bin/activate: pyproject.toml
-	poetry install
+	poetry install --no-root
 
 cleanup:
 	for d in $(TASKS) ; do \
