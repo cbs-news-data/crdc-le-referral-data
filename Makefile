@@ -11,7 +11,7 @@ TASKS := clean notebooks
 all: $(TASKS)
 
 $(TASKS): .venv/bin/activate
-	source $< && $(MAKE) -C $@
+	source $< && $(MAKE) -C $@ -j 4
 
 init: .venv/bin/activate
 
