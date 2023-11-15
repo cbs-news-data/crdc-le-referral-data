@@ -1,3 +1,7 @@
+INFO:root:dropped 549 duplicate rows
+INFO:root:dropped 0 duplicate rows
+INFO:root:dropped 6 duplicate rows
+INFO:root:dropped 0 duplicate rows
 INFO:root:dropped 19 rows with arrest or referral rates over 100%
 INFO:root:dropped 2985 rows with more arrests than referrals
 INFO:root:dropped 80 rows with very high totals and near-identical arrest and referral rates

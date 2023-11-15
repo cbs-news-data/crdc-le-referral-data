@@ -66,7 +66,8 @@ def get_max_grade(df: pd.DataFrame) -> pd.DataFrame:
 
 def drop_duplicates_keep_most_complete(df: pd.DataFrame) -> pd.DataFrame:
     """drops duplicates and keeps the most complete row"""
-    return (
+    orig_len = len(df)
+    result = (
         df.assign(
             completeness_score=lambda df: df.apply(
                 lambda row: sum(1 for key in row.index if pd.notna(row[key])), axis=1
@@ -76,6 +77,8 @@ def drop_duplicates_keep_most_complete(df: pd.DataFrame) -> pd.DataFrame:
         .drop_duplicates(subset=["LEAID", "SCHID"], keep="first")
         .drop("completeness_score", axis=1)
     )
+    logging.info("dropped %s duplicate rows", orig_len - len(result))
+    return result
 
 
 def select_cols(df: pd.DataFrame) -> pd.DataFrame:
