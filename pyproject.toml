@@ -22,6 +22,7 @@ papermill = "*"
 jinja2 = "*"
 stopit = "^1.1.2"
 snakemake = "^7.32.4"
+hvplot = "^0.9.0"
 
 [tool.poetry.dev-dependencies]
 black = "*"
