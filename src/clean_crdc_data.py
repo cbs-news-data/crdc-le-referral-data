@@ -101,6 +101,10 @@ def preprocess_df(df: pd.DataFrame, year) -> pd.DataFrame:
         .pipe(get_max_grade)
         .pipe(drop_duplicates_keep_most_complete)
         .assign(year=year)
+        # assign full school ID
+        .assign(
+            full_school_id=lambda df: df.LEAID.astype(str).str.zfill(7) + df.SCHID.astype(str).str.zfill(5)
+        )
     )
 
 
@@ -294,6 +298,21 @@ def drop_unwanted_schools(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def drop_manually_excluded_schools(df: pd.DataFrame) -> pd.DataFrame:
+    """drops schools that were manually excluded for a given year"""
+    # MANUAL_EXCLUSION_SCHOOLS is a dict of year and NCES IDs for schools to ignore for certain years
+    start_len = len(df)
+    for year, nces_ids in constants.MANUAL_EXCLUSION_SCHOOLS.items():
+        df = df.query("~(year == @year & full_school_id in @nces_ids)")
+    logging.info(
+        "dropped %s schools that were manually excluded (%s%% of %s total)",
+        start_len - len(df),
+        round((start_len - len(df)) / start_len * 100, 2),
+        len(df),
+    )
+    return df
+
+
 def main(*input_files, output_file):
     """main function"""
     (
@@ -301,6 +320,7 @@ def main(*input_files, output_file):
         .pipe(calculate_totals)
         .pipe(drop_rows_with_data_entry_errors)
         .pipe(drop_unwanted_schools)
+        .pipe(drop_manually_excluded_schools)
         .to_csv(output_file, index=False)
     )
 

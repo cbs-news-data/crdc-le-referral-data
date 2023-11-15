@@ -168,3 +168,48 @@ DROP_SCHOOLS_KWDS = [
     # "e-learning", e-academy, e-institute, etc.
     r"(?<=\s)e\-|$e\-",
 ]
+
+# dict of year and NCES IDs for schools to ignore for certain years
+MANUAL_EXCLUSION_SCHOOLS = {
+    2020: [
+        # eagle mt-saginaw isd - we spoke with the district and they said
+        # the data was incorrect. they are working to resolve the problem with 
+        # the department of education and we are excluding it from this analysis for this year
+        "481770007447",
+        "481770001531",
+        "481770006095",
+        "481770011034",
+        "481770012760",
+        "481770011346",
+        "481770013980",
+        "481770011033",
+        "481770013221",
+        "481770001532",
+        "481770022908",
+        "481770012120",
+        "481770022909",
+        "481770006538",
+        "481770005450",
+        "481770011345",
+        "481770009059",
+        "481770008045",
+        "481770001533",
+        "481770014137",
+        "481770011880",
+        "481770013789",
+        "481770011869",
+        "481770011940",
+        "481770011344",
+        "481770009509",
+        "481770001534",
+        "481770011031",
+        "481770007731",
+        "481770001535",
+        "481770011032",
+        "481770012416",
+        # hutto elementary - we reached out to the district and are awaiting
+        # a response. we are excluding it from this analysis for this year
+        # because its numbers are quite high.
+        "482410002685"   
+    ]
+}
