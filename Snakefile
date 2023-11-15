@@ -16,8 +16,9 @@ INPUT_FILES_1718 = [
 OUTPUT_NOTEBOOKS = [
     "notebooks/1718_referrals_arrests/output/crdc_le_referrals_arrests_g5.ipynb",
     "notebooks/1718_referrals_arrests/output/crdc_le_referrals_arrests_g8.ipynb",
-    "notebooks/historical_trends/output/trends.ipynb"
 ]
+
+GRADES = [5, 8]
 
 # Define the output file
 OUTPUT_FILE_CLEANED = "clean/output/crdc-referrals-arrests-cleaned.csv"
@@ -38,16 +39,15 @@ rule clean:
 # Runs the notebooks with various parameters to generate the final output using papermill
 rule notebooks:
     input:
-        cleaned=OUTPUT_FILE_CLEANED
+        cleaned=OUTPUT_FILE_CLEANED,
+        nb="notebooks/1718_referrals_arrests/crdc_le_referrals_arrests.ipynb",
     output:
         nb_g5="notebooks/1718_referrals_arrests/output/crdc_le_referrals_arrests_g5.ipynb",
         nb_g8="notebooks/1718_referrals_arrests/output/crdc_le_referrals_arrests_g8.ipynb",
-        trends="notebooks/historical_trends/output/trends.ipynb"
     shell:
         """
-        papermill notebooks/1718_referrals_arrests/crdc_le_referrals_arrests.ipynb {output.nb_g5} -p MAX_GRADE 5
-        papermill notebooks/1718_referrals_arrests/crdc_le_referrals_arrests.ipynb {output.nb_g8} -p MAX_GRADE 8
-        papermill notebooks/historical_trends/trends.ipynb {output.trends}
+        papermill {input.nb} {output.nb_g5} -p DIR notebooks/1718_referrals_arrests -p MAX_GRADE 5 -p YEAR 2017
+        papermill {input.nb} {output.nb_g8} -p DIR notebooks/1718_referrals_arrests -p MAX_GRADE 8 -p YEAR 2017
         """
 
 rule all:

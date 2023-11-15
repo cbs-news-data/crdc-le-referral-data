@@ -14,29 +14,29 @@ Use these summary lines as a starting point for your local package.
 
 > Hundreds of young children are arrested every year in US elementary schools. 
 
-> As many as {{ _1718_national_total_arrests | round(-2) |int }} ({{ _1718_national_total_arrests |int }}) kids were arrested at US elementary schools in a single year. 
+> As many as {{ national_total_arrests | round(-2) |int }} ({{ national_total_arrests |int }}) kids were arrested at US elementary schools in a single year. 
 
-> US elementary schools called police on kids {{ _1718_national_total_referrals | round(-3) |int }} ({{ _1718_national_total_referrals |int }}) times in a single year. 
+> US elementary schools called police on kids {{ national_total_referrals | round(-3) |int }} ({{ national_total_referrals |int }}) times in a single year. 
 
-> When an elementary school calls the police on a student, it's rare for that student to actually be arrested. Only about one out of every {{ _1718_pct_arrested_1_in_x |int }} of so-called law enforcement "referrals" end with a documented arrest. But that still means that hundreds of the youngest schoolchildren are arrested at school every year. 
+> When an elementary school calls the police on a student, it's rare for that student to actually be arrested. Only about one out of every {{ pct_arrested_1_in_x |int }} of so-called law enforcement "referrals" end with a documented arrest. But that still means that hundreds of the youngest schoolchildren are arrested at school every year. 
 
 > Black children and children with disabilities are more likely to be arrested at school than their white and non-disabled peers.
 
-> Black elementary school students are {{ _1718_arrest_rate_black_vs_white |int }} times as likely to be arrested in school than their white peers. 
+> Black elementary school students are {{ arrest_rate_black_vs_white |int }} times as likely to be arrested in school than their white peers. 
 
-> Elementary school students with disabilities are {{ _1718_arrest_rate_idea_vs_nondis |int }} times as likely to be arrested in school than their peers without disabilities. 
+> Elementary school students with disabilities are {{ arrest_rate_idea_vs_nondis |int }} times as likely to be arrested in school than their peers without disabilities. 
 
 ### {{ state }} data
 
-> {{ state }} elementary schools called the police on kids {{ _1718_state_total_referrals |int }} times in a single year. {{ _1718_state_total_arrests |int }} of those kids were arrested. 
+> {{ state }} elementary schools called the police on kids {{ state_total_referrals |int }} times in a single year. {{ state_total_arrests |int }} of those kids were arrested. 
 
-> Of those arrested, {{ _1718_state_total_arrests_white |int }} were white, {{ _1718_state_total_arrests_black |int }} were black, and {{ _1718_state_total_arrests_hispanic |int }} were hispanic. 
+> Of those arrested, {{ state_total_arrests_white |int }} were white, {{ state_total_arrests_black |int }} were black, and {{ state_total_arrests_hispanic |int }} were hispanic. 
 
-> Of those arrested, {{ _1718_state_total_arrests_idea |int }} had disabilities, and {{ _1718_state_total_arrests_nondis |int }} didn't have disabilities. 
+> Of those arrested, {{ state_total_arrests_idea |int }} had disabilities, and {{ state_total_arrests_nondis |int }} didn't have disabilities. 
 
-> Of those who had the police called on them, {{ _1718_state_total_referrals_white |int }} were white, {{ _1718_state_total_referrals_black |int }} were black, and {{ _1718_state_total_referrals_hispanic |int }} were hispanic.
+> Of those who had the police called on them, {{ state_total_referrals_white |int }} were white, {{ state_total_referrals_black |int }} were black, and {{ state_total_referrals_hispanic |int }} were hispanic.
 
-> Of those who had police called on them, {{ _1718_state_total_referrals_idea |int }} had disabilities, and {{ _1718_state_total_referrals_nondis |int }} didn't have disabilities. 
+> Of those who had police called on them, {{ state_total_referrals_idea |int }} had disabilities, and {{ state_total_referrals_nondis |int }} didn't have disabilities. 
 
 ### Want more data? 
 
