@@ -8,5 +8,5 @@ INFO:root:Cleaning ['clean/input/2021-crdc-sch-characteristics.csv', 'clean/inpu
 INFO:root:dropped 0 duplicate rows (0.0% of 97575 total)
 INFO:root:dropped 19 rows with arrest or referral rates over 100% (0.0% of 387055 total)
 INFO:root:dropped 2985 rows with more arrests than referrals (0.77% of 384070 total)
-INFO:root:dropped 80 rows with very high totals and near-identical arrest and referral rates (383970.02% of 383990 total)
+INFO:root:dropped 80 rows with very high totals and near-identical arrest and referral rates (0.02% of 383990 total)
 INFO:root:dropped 32188 schools that were alternative or too small (8.38% of 351802 total)

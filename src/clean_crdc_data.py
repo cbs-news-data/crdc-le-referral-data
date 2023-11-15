@@ -261,7 +261,7 @@ def drop_rows_with_data_entry_errors(df: pd.DataFrame) -> pd.DataFrame:
     logging.info(
         "dropped %s rows with very high totals and near-identical arrest and referral rates (%s%% of %s total)",
         start_len - new_len,
-        round((start_len - new_len / start_len * 100), 2),
+        round((start_len - new_len) / start_len * 100, 2),
         new_len
     )
     return df
