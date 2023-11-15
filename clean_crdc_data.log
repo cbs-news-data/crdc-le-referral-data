@@ -1,8 +1,12 @@
-INFO:root:dropped 549 duplicate rows
-INFO:root:dropped 0 duplicate rows
-INFO:root:dropped 6 duplicate rows
-INFO:root:dropped 0 duplicate rows
-INFO:root:dropped 19 rows with arrest or referral rates over 100%
-INFO:root:dropped 2985 rows with more arrests than referrals
-INFO:root:dropped 80 rows with very high totals and near-identical arrest and referral rates
-INFO:root:dropped 32188 schools that were alternative or too small
+INFO:root:Cleaning ['clean/input/1314-crdc-sch-characteristics.xlsx.csv', 'clean/input/1314-crdc-sch-enrollment.xlsx.csv', 'clean/input/1314-crdc-sch-referrals-arrests.xlsx.csv']
+INFO:root:dropped 549 duplicate rows (0.57% of 96056 total)
+INFO:root:Cleaning ['clean/input/CRDC-2015-16-School-Data.csv.gz']
+INFO:root:dropped 0 duplicate rows (0.0% of 96360 total)
+INFO:root:Cleaning ['clean/input/1718-crdc-sch-characteristics.csv', 'clean/input/1718-crdc-sch-enrollment.csv', 'clean/input/1718-crdc-sch-referrals-arrests.csv']
+INFO:root:dropped 6 duplicate rows (0.01% of 97638 total)
+INFO:root:Cleaning ['clean/input/2021-crdc-sch-characteristics.csv', 'clean/input/2021-crdc-sch-enrollment.csv', 'clean/input/2021-crdc-sch-referrals-arrests.csv']
+INFO:root:dropped 0 duplicate rows (0.0% of 97575 total)
+INFO:root:dropped 19 rows with arrest or referral rates over 100% (0.0% of 387055 total)
+INFO:root:dropped 2985 rows with more arrests than referrals (0.77% of 384070 total)
+INFO:root:dropped 80 rows with very high totals and near-identical arrest and referral rates (383970.02% of 383990 total)
+INFO:root:dropped 32188 schools that were alternative or too small (8.38% of 351802 total)

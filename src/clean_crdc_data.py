@@ -77,7 +77,12 @@ def drop_duplicates_keep_most_complete(df: pd.DataFrame) -> pd.DataFrame:
         .drop_duplicates(subset=["LEAID", "SCHID"], keep="first")
         .drop("completeness_score", axis=1)
     )
-    logging.info("dropped %s duplicate rows", orig_len - len(result))
+    logging.info(
+        "dropped %s duplicate rows (%s%% of %s total)",
+        orig_len - len(result),
+        round((orig_len - len(result)) / orig_len * 100, 2),
+        orig_len,
+    )
     return result
 
 
@@ -120,6 +125,7 @@ def read_stack_dfs(*filenames) -> pd.DataFrame:
     dfs = []
     counter = tqdm()
     for filename in filenames:
+        logging.info("Cleaning %s", filename)
         counter.update(1)
         counter.set_description(f"Cleaning {filename}")
 
@@ -205,14 +211,21 @@ def drop_rows_with_data_entry_errors(df: pd.DataFrame) -> pd.DataFrame:
         "~(total_arrests > total_enrollment | total_referrals > total_enrollment)"
     )
     logging.info(
-        "dropped %s rows with arrest or referral rates over 100%%", start_len - len(df)
+        "dropped %s rows with arrest or referral rates over 100%% (%s%% of %s total)",
+        start_len - len(df),
+        round((start_len - len(df)) / start_len * 100, 2),
+        len(df),
     )
 
     # drop rows with more arrests than referrals
     start_len = len(df)
     df = df.query("~(total_arrests > total_referrals)")
+    new_len = len(df)
     logging.info(
-        "dropped %s rows with more arrests than referrals", start_len - len(df)
+        "dropped %s rows with more arrests than referrals (%s%% of %s total)",
+        start_len - len(df),
+        round((start_len - len(df)) / start_len * 100, 2),
+        new_len
     )
 
     # drop schools with very high totals and near-identical arrest and referral rates
@@ -244,9 +257,12 @@ def drop_rows_with_data_entry_errors(df: pd.DataFrame) -> pd.DataFrame:
         "~(total_referrals_arrests > threshold "
         "& abs(total_arrests - total_referrals) in @close_vals)"
     )
+    new_len = len(df)
     logging.info(
-        "dropped %s rows with very high totals and near-identical arrest and referral rates",
-        start_len - len(df),
+        "dropped %s rows with very high totals and near-identical arrest and referral rates (%s%% of %s total)",
+        start_len - new_len,
+        round((start_len - new_len / start_len * 100), 2),
+        new_len
     )
     return df
 
@@ -268,8 +284,12 @@ def drop_unwanted_schools(df: pd.DataFrame) -> pd.DataFrame:
         .query("SCH_STATUS_ALT == 'No' | SCH_STATUS_ALT == False")
         .pipe(lambda df: df[df.SCH_NAME.apply(does_not_contain_keyword)])
     )
+    new_len = len(df)
     logging.info(
-        "dropped %s schools that were alternative or too small", start_len - len(df)
+        "dropped %s schools that were alternative or too small (%s%% of %s total)", 
+        start_len - new_len,
+        round((start_len - new_len) / start_len * 100, 2),
+        new_len,
     )
     return df
 
